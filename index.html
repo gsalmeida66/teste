@@ -192,7 +192,7 @@
             <div className="flex-shrink-0 w-32 bg-white z-30"> 
               {/* Espaço para alinhar com o eixo X do cronograma */}
               <div className="h-16"></div> 
-              <div className="space-y-6"> {/* Adicionado space-y-6 aqui para espaçamento vertical */}
+              <div className="space-y-6"> 
                 {projects.map(project => (
                   <div key={project.id} className="h-16 flex items-center text-sm font-semibold text-gray-700 py-2">
                     {project.name}
@@ -208,7 +208,7 @@
                 {/* Datas posicionadas no topo */}
                 <div className="absolute top-0 w-full flex justify-between text-xs text-gray-500 z-10">
                   {getTimelineDates().map((date, index) => (
-                    <div key={index} className="text-center absolute" style={{ left: `${(getBusinessDays(timelineStartDateBotSac, date) - 1) * daysPerPixel}px` }}>
+                    <div key={index} className="text-center absolute whitespace-nowrap" style={{ left: `${(getBusinessDays(timelineStartDateBotSac, date) - 1) * daysPerPixel}px` }}>
                       {formatDate(date)}
                     </div>
                   ))}
@@ -217,9 +217,9 @@
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200 z-0"></div>
               </div>
               {/* Linhas de projeto e tarefas */}
-              <div className="space-y-6"> {/* Adicionado space-y-6 aqui para espaçamento vertical */}
+              <div className="space-y-6"> 
                 {projects.map(project => (
-                  <div key={project.id} className="flex items-center"> {/* Removido mb-6 daqui */}
+                  <div key={project.id} className="flex items-center"> 
                     <div className="flex-grow relative h-16" style={{ minWidth: `${minWidthTimeline}px` }}>
                       {project.tasks.map(task => {
                         const { left, width, startDate } = taskPositions[task.id] || {};
@@ -250,12 +250,18 @@
       return (
         <div className="bg-white p-6 rounded-2xl shadow-xl w-full sticky top-8 h-fit">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Análise Comparativa</h2>
-          <p className="text-gray-600 mb-4">
-            Insira aqui sua análise comparativa entre o cronograma atual e o ideal.
-          </p>
-          <div className="bg-gray-100 p-4 rounded-md h-96 overflow-y-auto">
-            <p className="text-gray-500 italic">
-              Este é o espaço para sua análise. Você pode adicionar pontos, gráficos ou textos para comparar os dois cronogramas.
+          <div className="text-gray-600 text-sm space-y-3">
+            <p>
+              Este plano de retenção é fundamental para **reverter a recente queda nas taxas de retenção de usuários** em nossos canais de atendimento, como URA e BOT. O objetivo principal é otimizar a experiência do usuário, incentivando a resolução de suas demandas diretamente nos canais digitais e, assim, **reduzir a necessidade de transferência para o atendimento humano**.
+            </p>
+            <p>
+              A comparação entre os dois cronogramas ilustra o **impacto estratégico de ter um profissional de UX adicional** em nossa equipe. A etapa de UX, que engloba desde a HLD (High-Level Design) até a especificação detalhada (UX - SPEC), é uma fase crítica e, muitas vezes, um gargalo no desenvolvimento dos projetos.
+            </p>
+            <p>
+              Com um recurso de UX extra, o cronograma ideal demonstra como podemos **paralelizar significativamente mais projetos**. Essa capacidade de execução simultânea é vital para acelerar a implementação de novas iniciativas de retenção.
+            </p>
+            <p>
+              É importante ressaltar que os projetos de URA, por si só, representam uma parcela substancial da nossa operação, correspondendo a **46,79% da volumetria total do canal de voz**. A otimização e a agilidade na entrega desses projetos, possibilitadas pelo cronograma ideal, terão um **impacto direto e expressivo na recuperação e no aumento da nossa taxa de retenção geral**.
             </p>
           </div>
         </div>
@@ -500,4 +506,3 @@
   </script>
 </body>
 </html>
-
