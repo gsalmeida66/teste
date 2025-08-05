@@ -147,7 +147,7 @@
             { id: 'rac-qa-planejamento', name: '[QA] Planejamento Modelagem', duration: 2, status: 'Não Iniciado', predecessors: ['rac-bi-doc'] },
             { id: 'rac-dev', name: '[DEV] Desenvolvimento de Fluxo', duration: 2, status: 'Não Iniciado', predecessors: ['rac-qa-planejamento'] },
             { id: 'rac-qa-execucao', name: '[QA] Execução de Testes', duration: 2, status: 'Não Iniciado', predecessors: ['rac-dev'] },
-            { id: 'rac-po-certificacao', duration: 1, status: 'Não Iniciado', predecessors: ['rac-qa-execucao'] },
+            { id: 'rac-po-certificacao', name: '[PO] Certificação', duration: 1, status: 'Não Iniciado', predecessors: ['rac-qa-execucao'] },
             { id: 'rac-gmud', name: 'GMUD', duration: 1, status: 'Não Iniciado', predecessors: ['rac-po-certificacao'] },
           ],
         },
@@ -396,3 +396,4 @@
   </script>
 </body>
 </html>
+
