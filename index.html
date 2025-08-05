@@ -227,11 +227,11 @@
                         return (
                           <div
                             key={task.id}
-                            className={`absolute top-1/2 -translate-y-1/2 ${getTaskColor(task.status)} h-14 rounded-md flex items-center text-sm text-white font-semibold shadow cursor-pointer transition-all duration-300 hover:scale-105`}
+                            className={`absolute top-1/2 -translate-y-1/2 ${getTaskColor(task.status)} h-14 rounded-md flex items-center justify-center text-center text-sm text-white font-semibold shadow cursor-pointer transition-all duration-300 hover:scale-105 border-2 border-white`}
                             style={{ left: `${left}px`, width: `${width}px` }}
                             title={`${task.name} (${formatDate(startDate)} a ${formatDate(addBusinessDays(startDate, task.duration))})`}
                           >
-                            <span className="pl-2">{task.name}</span>
+                            <span className="truncate">{task.name}</span>
                           </div>
                         );
                       })}
@@ -425,8 +425,8 @@
             { id: 'rac-qa-planejamento', name: '[QA] Planejamento Modelagem', duration: 2, status: 'Não Iniciado', predecessors: ['rac-bi-doc'] },
             { id: 'rac-dev', name: '[DEV] Desenvolvimento de Fluxo', duration: 2, status: 'Não Iniciado', predecessors: ['rac-qa-planejamento'] },
             { id: 'rac-qa-execucao', name: '[QA] Execução de Testes', duration: 2, status: 'Não Iniciado', predecessors: ['rac-dev'] },
-            { id: 'rac-po-certificacao', duration: 1, status: 'Não Iniciado', predecessors: ['rac-qa-execucao'] },
-            { id: 'rac-gmud', duration: 1, status: 'Não Iniciado', predecessors: ['rac-po-certificacao'] },
+            { id: 'rac-po-certificacao', name: '[PO] Certificação', duration: 1, status: 'Não Iniciado', predecessors: ['rac-qa-execucao'] },
+            { id: 'rac-gmud', name: 'GMUD', duration: 1, status: 'Não Iniciado', predecessors: ['rac-po-certificacao'] },
           ],
         },
       ];
