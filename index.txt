@@ -36,24 +36,25 @@ const formatDate = (date) => {
 
 const App = () => {
   const timelineStartDateBotSac = new Date('2025-06-13T00:00:00');
-  const timelineStartDateUra = new Date('2025-08-11T00:00:00');
   const daysPerPixel = 40;
-  const minWidthTimeline = 3000; 
+  const minWidthTimeline = 3000;
 
   const [projects, setProjects] = useState([
     {
       id: 'bot_sac',
       name: 'BOT SAC (Menu ACOA)',
       tasks: [
-        { id: '98', name: 'Escopo', duration: 3, status: 'Concluída', predecessors: [] },
-        { id: '99', name: 'UX - SD', duration: 2, status: 'Concluída', predecessors: ['98'] },
-        { id: '101', name: 'UX - Spec', duration: 9, status: 'Concluída', predecessors: ['98'] },
-        { id: '100', name: 'Movida - Aprovação SD', duration: 28, status: 'Concluída', predecessors: ['99'] },
-        { id: '104', name: 'DEV - Desenvolvimento', duration: 7, status: 'Concluída', predecessors: ['100'] },
-        { id: '102', name: 'BI - Marcação e Documentação', duration: 2, status: 'Concluída', predecessors: ['100'] },
-        { id: '103', name: 'QA - Planejamento Modelagem', duration: 3, status: 'Concluída', predecessors: ['102'] },
-        { id: '105', name: 'QA - Execução', duration: 3, status: 'Em Andamento', predecessors: ['103'] },
-        { id: '106', name: 'PO - Certificação', duration: 3, status: 'Não Iniciado', predecessors: ['105'] },
+        { id: '96', name: 'HLD', duration: 2, status: 'Concluída', predecessors: [] },
+        // A etapa '[Movida] Aprovação HLD' foi removida
+        { id: '98', name: 'Escopo', duration: 3, status: 'Concluída', predecessors: ['96'] },
+        { id: '99', name: '[UX] SD', duration: 2, status: 'Concluída', predecessors: ['98'] },
+        { id: '100', name: '[Movida] Aprovação SD', duration: 28, status: 'Concluída', predecessors: ['99'] },
+        { id: '101', name: '[UX] Spec', duration: 9, status: 'Concluída', predecessors: ['100'] },
+        { id: '102', name: '[BI] Marcação Documentação', duration: 2, status: 'Concluída', predecessors: ['101'] },
+        { id: '103', name: '[QA] Planejamento Modelagem', duration: 3, status: 'Em Andamento', predecessors: ['102'] },
+        { id: '104', name: '[DEV] Desenvolvimento de Fluxo', duration: 7, status: 'Concluída', predecessors: ['103'] },
+        { id: '105', name: '[QA] Execução de Testes', duration: 3, status: 'Não Iniciado', predecessors: ['104'] },
+        { id: '106', name: '[PO] Certificação', duration: 3, status: 'Não Iniciado', predecessors: ['105'] },
         { id: '107', name: 'GMUD', duration: 1, status: 'Não Iniciado', predecessors: ['106'] },
       ],
     },
@@ -64,15 +65,14 @@ const App = () => {
         { id: 'hld-cpa', name: 'HLD', duration: 2, status: 'Concluída', predecessors: [] },
         { id: 'aprovacao-hld-cpa', name: '[Movida] Aprovação HLD', duration: 4, status: 'Concluída', predecessors: ['hld-cpa'] },
         { id: 'cpa-1', name: 'Escopo', duration: 2, status: 'Não Iniciado', predecessors: ['aprovacao-hld-cpa'] },
-        { id: 'cpa-2', name: 'UX - Spec', duration: 2, status: 'Não Iniciado', predecessors: ['cpa-1'] },
-        { id: 'cpa-3', name: 'UX - SD', duration: 2, status: 'Não Iniciado', predecessors: ['cpa-1'] },
-        { id: 'cpa-4', name: 'Movida - Aprovação SD', duration: 2, status: 'Não Iniciado', predecessors: ['cpa-3'] },
-        { id: 'cpa-ux-spec-new', name: 'UX - SPEC', duration: 2, status: 'Não Iniciado', predecessors: ['cpa-4'] },
-        { id: 'cpa-bi-doc-new', name: 'BI - Marcação Documentação', duration: 2, status: 'Não Iniciado', predecessors: ['cpa-ux-spec-new'] },
-        { id: 'cpa-6', name: 'DEV - Desenvolvimento de Fluxo', duration: 2, status: 'Não Iniciado', predecessors: ['cpa-bi-doc-new'] },
-        { id: 'cpa-7', name: 'QA - Planejamento Modelagem', duration: 2, status: 'Não Iniciado', predecessors: ['cpa-bi-doc-new'] },
-        { id: 'cpa-8', name: 'QA - Execução de Testes', duration: 2, status: 'Não Iniciado', predecessors: ['cpa-7'] },
-        { id: 'cpa-9', name: 'PO - Certificação', duration: 1, status: 'Não Iniciado', predecessors: ['cpa-8'] },
+        { id: 'cpa-3', name: '[UX] SD', duration: 2, status: 'Não Iniciado', predecessors: ['cpa-1'] },
+        { id: 'cpa-4', name: '[Movida] Aprovação SD', duration: 2, status: 'Não Iniciado', predecessors: ['cpa-3'] },
+        { id: 'cpa-2', name: '[UX] Spec', duration: 2, status: 'Não Iniciado', predecessors: ['cpa-4'] },
+        { id: 'cpa-5', name: '[BI] Marcação Documentação', duration: 2, status: 'Não Iniciado', predecessors: ['cpa-2'] },
+        { id: 'cpa-7', name: '[QA] Planejamento Modelagem', duration: 2, status: 'Não Iniciado', predecessors: ['cpa-5'] },
+        { id: 'cpa-6', name: '[DEV] Desenvolvimento de Fluxo', duration: 2, status: 'Não Iniciado', predecessors: ['cpa-7'] },
+        { id: 'cpa-8', name: '[QA] Execução de Testes', duration: 2, status: 'Não Iniciado', predecessors: ['cpa-6'] },
+        { id: 'cpa-9', name: '[PO] Certificação', duration: 1, status: 'Não Iniciado', predecessors: ['cpa-8'] },
         { id: 'cpa-10', name: 'GMUD', duration: 1, status: 'Não Iniciado', predecessors: ['cpa-9'] },
       ],
     },
@@ -80,18 +80,17 @@ const App = () => {
       id: 'ura_reservas',
       name: 'URA Reservas',
       tasks: [
-        { id: 'hld-ura', name: 'HLD', duration: 2, status: 'Não Iniciado', predecessors: [], startDate: new Date('2025-07-30T00:00:00')},
+        { id: 'hld-ura', name: 'HLD', duration: 2, status: 'Não Iniciado', predecessors: ['bot_cpa:cpa-2'] },
         { id: 'aprovacao-hld-ura', name: '[Movida] Aprovação HLD', duration: 4, status: 'Não Iniciado', predecessors: ['hld-ura'] },
         { id: '183', name: 'Escopo', duration: 2, status: 'Não Iniciado', predecessors: ['aprovacao-hld-ura'] },
-        { id: '186', name: 'UX - Spec', duration: 2, status: 'Não Iniciado', predecessors: ['183'] },
-        { id: '184', name: 'UX - SD', duration: 2, status: 'Não Iniciado', predecessors: ['183'] },
-        { id: '185', name: 'Movida - Aprovação SD', duration: 2, status: 'Não Iniciado', predecessors: ['184'] },
-        { id: 'ura-ux-spec-new', name: 'UX - SPEC', duration: 2, status: 'Não Iniciado', predecessors: ['185'] },
-        { id: 'ura-bi-doc-new', name: 'BI - Marcação Documentação', duration: 2, status: 'Não Iniciado', predecessors: ['ura-ux-spec-new'] },
-        { id: '189', name: 'DEV - Desenvolvimento de Fluxo', duration: 2, status: 'Não Iniciado', predecessors: ['ura-bi-doc-new'] },
-        { id: '188', name: 'QA - Planejamento Modelagem', duration: 2, status: 'Não Iniciado', predecessors: ['ura-bi-doc-new'] },
-        { id: '190', name: 'QA - Execução de Testes', duration: 2, status: 'Não Iniciado', predecessors: ['188'] },
-        { id: '191', name: 'PO - Certificação', duration: 1, status: 'Não Iniciado', predecessors: ['190'] },
+        { id: '184', name: '[UX] SD', duration: 2, status: 'Não Iniciado', predecessors: ['183'] },
+        { id: '185', name: '[Movida] Aprovação SD', duration: 2, status: 'Não Iniciado', predecessors: ['184'] },
+        { id: '186', name: '[UX] Spec', duration: 2, status: 'Não Iniciado', predecessors: ['185'] },
+        { id: '187', name: '[BI] Marcação Documentação', duration: 2, status: 'Não Iniciado', predecessors: ['186'] },
+        { id: '188', name: '[QA] Planejamento Modelagem', duration: 2, status: 'Não Iniciado', predecessors: ['187'] },
+        { id: '189', name: '[DEV] Desenvolvimento de Fluxo', duration: 2, status: 'Não Iniciado', predecessors: ['188'] },
+        { id: '190', name: '[QA] Execução de Testes', duration: 2, status: 'Não Iniciado', predecessors: ['189'] },
+        { id: '191', name: '[PO] Certificação', duration: 1, status: 'Não Iniciado', predecessors: ['190'] },
         { id: '192', name: 'GMUD', duration: 1, status: 'Não Iniciado', predecessors: ['191'] },
       ],
     },
@@ -99,18 +98,17 @@ const App = () => {
       id: 'ura_nova_reserva',
       name: 'URA Reservas (Automação Nova Reserva)',
       tasks: [
-        { id: 'hld-e2', name: 'HLD', duration: 2, status: 'Não Iniciado', predecessors: [] },
+        { id: 'hld-e2', name: 'HLD', duration: 2, status: 'Não Iniciado', predecessors: ['ura_reservas:186'] },
         { id: 'aprovacao-hld-e2', name: '[Movida] Aprovação HLD', duration: 4, status: 'Não Iniciado', predecessors: ['hld-e2'] },
         { id: 'e2-1', name: 'Escopo', duration: 2, status: 'Não Iniciado', predecessors: ['aprovacao-hld-e2'] },
-        { id: 'e2-2', name: 'UX - Spec', duration: 2, status: 'Não Iniciado', predecessors: ['e2-1'] },
-        { id: 'e2-3', name: 'UX - SD', duration: 2, status: 'Não Iniciado', predecessors: ['e2-1'] },
-        { id: 'e2-4', name: 'Movida - Aprovação SD', duration: 2, status: 'Não Iniciado', predecessors: ['e2-3'] },
-        { id: 'unr-ux-spec-new', name: 'UX - SPEC', duration: 2, status: 'Não Iniciado', predecessors: ['e2-4'] },
-        { id: 'unr-bi-doc-new', name: 'BI - Marcação Documentação', duration: 2, status: 'Não Iniciado', predecessors: ['unr-ux-spec-new'] },
-        { id: 'e2-6', name: 'DEV - Desenvolvimento de Fluxo', duration: 2, status: 'Não Iniciado', predecessors: ['unr-bi-doc-new'] },
-        { id: 'e2-7', name: 'QA - Planejamento Modelagem', duration: 2, status: 'Não Iniciado', predecessors: ['unr-bi-doc-new'] },
-        { id: 'e2-8', name: 'QA - Execução de Testes', duration: 2, status: 'Não Iniciado', predecessors: ['e2-7'] },
-        { id: 'e2-9', name: 'PO - Certificação', duration: 1, status: 'Não Iniciado', predecessors: ['e2-8'] },
+        { id: 'e2-3', name: '[UX] SD', duration: 2, status: 'Não Iniciado', predecessors: ['e2-1'] },
+        { id: 'e2-4', name: '[Movida] Aprovação SD', duration: 2, status: 'Não Iniciado', predecessors: ['e2-3'] },
+        { id: 'e2-2', name: '[UX] Spec', duration: 2, status: 'Não Iniciado', predecessors: ['e2-4'] },
+        { id: 'e2-5', name: '[BI] Marcação Documentação', duration: 2, status: 'Não Iniciado', predecessors: ['e2-2'] },
+        { id: 'e2-7', name: '[QA] Planejamento Modelagem', duration: 2, status: 'Não Iniciado', predecessors: ['e2-5'] },
+        { id: 'e2-6', name: '[DEV] Desenvolvimento de Fluxo', duration: 2, status: 'Não Iniciado', predecessors: ['e2-7'] },
+        { id: 'e2-8', name: '[QA] Execução de Testes', duration: 2, status: 'Não Iniciado', predecessors: ['e2-6'] },
+        { id: 'e2-9', name: '[PO] Certificação', duration: 1, status: 'Não Iniciado', predecessors: ['e2-8'] },
         { id: 'e2-10', name: 'GMUD', duration: 1, status: 'Não Iniciado', predecessors: ['e2-9'] },
       ],
     },
@@ -128,14 +126,23 @@ const App = () => {
     allTasks.forEach(task => {
       let startDate;
       
-      if (task.predecessors && task.predecessors.length > 0) {
+      if (task.projectId === 'bot_cpa' && task.id === 'hld-cpa') {
+          startDate = new Date('2025-07-28T00:00:00');
+      } else if (task.predecessors && task.predecessors.length > 0) {
         const predecessorEndDates = task.predecessors.map(predId => {
-          const predPos = positions[predId];
-          return predPos ? addBusinessDays(predPos.startDate, predPos.duration - 1) : timelineStartDateBotSac;
+          const predIdParts = predId.split(':');
+          const predecessorProjectId = predIdParts.length > 1 ? predIdParts[0] : task.projectId;
+          const predecessorTaskId = predIdParts.length > 1 ? predIdParts[1] : predIdParts[0];
+          const predPos = projects.find(p => p.id === predecessorProjectId).tasks.find(t => t.id === predecessorTaskId);
+          
+          if (!predPos) return timelineStartDateBotSac;
+          const predStartDate = positions[predPos.id] ? positions[predPos.id].startDate : timelineStartDateBotSac;
+          const predDuration = predPos.duration;
+          return addBusinessDays(predStartDate, predDuration - 1);
         });
         startDate = addBusinessDays(new Date(Math.max(...predecessorEndDates)), 1);
       } else {
-        startDate = task.projectId === 'ura_reservas' ? new Date('2025-07-30T00:00:00') : (task.projectId === 'bot_cpa' ? new Date('2025-07-23T00:00:00') : (task.projectId === 'ura_nova_reserva' ? addBusinessDays(positions['cpa-4'].startDate, positions['cpa-4'].duration) : timelineStartDateBotSac));
+        startDate = task.projectId === 'bot_cpa' ? addBusinessDays(positions['101'].startDate, positions['101'].duration) : (task.projectId === 'ura_reservas' ? addBusinessDays(positions['cpa-2'].startDate, positions['cpa-2'].duration) : (task.projectId === 'ura_nova_reserva' ? addBusinessDays(positions['186'].startDate, positions['186'].duration) : timelineStartDateBotSac));
       }
       
       const referenceDate = timelineStartDateBotSac;
@@ -197,15 +204,14 @@ const App = () => {
     const botSacLastTask = projects.find(p => p.id === 'bot_sac').tasks.find(t => t.id === '107');
     const uraLastTask = projects.find(p => p.id === 'ura_reservas').tasks.find(t => t.id === '192');
     const botCpaLastTask = projects.find(p => p.id === 'bot_cpa').tasks.find(t => t.id === 'cpa-10');
-    const exemplo2LastTask = projects.find(p => p.id === 'ura_nova_reserva').tasks.find(t => t.id === 'e2-10');
+    const unrLastTask = projects.find(p => p.id === 'ura_nova_reserva').tasks.find(t => t.id === 'e2-10');
     
     const botSacEndDate = taskPositions[botSacLastTask.id] ? addBusinessDays(taskPositions[botSacLastTask.id].startDate, taskPositions[botSacLastTask.id].duration) : timelineStartDateBotSac;
-    const uraEndDate = taskPositions[uraLastTask.id] ? addBusinessDays(taskPositions[uraLastTask.id].startDate, taskPositions[uraLastTask.id].duration) : timelineStartDateUra;
-    const botCpaEndDate = taskPositions[botCpaLastTask.id] ? addBusinessDays(taskPositions[botCpaLastTask.id].startDate, taskPositions[botCpaLastTask.id].duration) : timelineStartDateUra;
-    const exemplo2EndDate = taskPositions[exemplo2LastTask.id] ? addBusinessDays(taskPositions[exemplo2LastTask.id].startDate, taskPositions[exemplo2LastTask.id].duration) : timelineStartDateUra;
+    const uraEndDate = taskPositions[uraLastTask.id] ? addBusinessDays(taskPositions[uraLastTask.id].startDate, taskPositions[uraLastTask.id].duration) : timelineStartDateBotSac;
+    const botCpaEndDate = taskPositions[botCpaLastTask.id] ? addBusinessDays(taskPositions[botCpaLastTask.id].startDate, taskPositions[botCpaLastTask.id].duration) : timelineStartDateBotSac;
+    const unrEndDate = taskPositions[unrLastTask.id] ? addBusinessDays(taskPositions[unrLastTask.id].startDate, taskPositions[unrLastTask.id].duration) : timelineStartDateBotSac;
     
-
-    const endDate = new Date(Math.max(botSacEndDate.getTime(), uraEndDate.getTime(), botCpaEndDate.getTime(), exemplo2EndDate.getTime()));
+    const endDate = new Date(Math.max(botSacEndDate.getTime(), uraEndDate.getTime(), botCpaEndDate.getTime(), unrEndDate.getTime()));
     
     let currentDate = new Date(timelineStartDateBotSac);
     
