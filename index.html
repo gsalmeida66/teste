@@ -252,16 +252,24 @@
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Análise Comparativa</h2>
           <div className="text-gray-600 text-sm space-y-3">
             <p>
-              Este plano de retenção é fundamental para **reverter a recente queda nas taxas de retenção de usuários** em nossos canais de atendimento, como URA e BOT. O objetivo principal é otimizar a experiência do usuário, incentivando a resolução de suas demandas diretamente nos canais digitais e, assim, **reduzir a necessidade de transferência para o atendimento humano**.
+              Nosso objetivo é ambicioso: aumentar a retenção em 10,21%. No entanto, com o nosso plano atual, estamos projetando um crescimento de apenas 2,70%. A diferença entre o "Atual" e o "Ideal" é a nossa capacidade de execução. Para fechar essa lacuna, precisamos agir de forma mais rápida e inteligente em vários pontos do nosso fluxo de atendimento.
             </p>
             <p>
-              A comparação entre os dois cronogramas ilustra o **impacto estratégico de ter um profissional de UX adicional** em nossa equipe. A etapa de UX, que engloba desde a HLD (High-Level Design) até a especificação detalhada (UX - SPEC), é uma fase crítica e, muitas vezes, um gargalo no desenvolvimento dos projetos.
+              A boa notícia é que a análise detalhada dos nossos dados nos mostra exatamente onde focar. Os projetos de retenção que já temos em mente abrangem quase metade do volume dos nossos canais de voz (46,79%) e texto (50,84%). Se atuarmos nesses pontos, o impacto será enorme.
             </p>
             <p>
-              Com um recurso de UX extra, o cronograma ideal demonstra como podemos **paralelizar significativamente mais projetos**. Essa capacidade de execução simultânea é vital para acelerar a implementação de novas iniciativas de retenção.
+              As grandes oportunidades estão em:
             </p>
+            <ul>
+              <li>
+                **Canal BOT de Reservas:** O fluxo de `Perguntas Frequentes` tem um volume altíssimo, mas uma taxa de retenção baixíssima. Melhorar a experiência nesse ponto pode resultar em um ganho de **644 chamadas retidas**, um dos maiores impactos em volume do nosso estudo.
+              </li>
+              <li>
+                **Canal de `SAC` e `Reservas` (URA):** Fluxos de saudação, identificação e contratos também se destacam. Eles têm um alto potencial de retenção e, se otimizados, podem contribuir significativamente para o nosso objetivo.
+              </li>
+            </ul>
             <p>
-              É importante ressaltar que os projetos de URA, por si só, representam uma parcela substancial da nossa operação, correspondendo a **46,79% da volumetria total do canal de voz**. A otimização e a agilidade na entrega desses projetos, possibilitadas pelo cronograma ideal, terão um **impacto direto e expressivo na recuperação e no aumento da nossa taxa de retenção geral**.
+              Para capturar esses ganhos de forma mais rápida, a solução é **paralelizar o trabalho**. É aqui que entra a necessidade de um profissional de UX. Em vez de lidar com cada projeto de retenção um de cada vez, um especialista em UX pode atuar em diversas frentes ao mesmo tempo. Ele(a) nos ajudará a desenhar soluções mais eficazes e centradas no cliente, acelerando a implementação e o impacto no negócio.
             </p>
           </div>
         </div>
@@ -273,9 +281,7 @@
       const positions = {};
       const timelineStartDateBotSac = new Date('2025-06-09T00:00:00'); 
       const daysPerPixel = 40;
-
       const allTasks = projectsToCalculate.flatMap(p => p.tasks.map(t => ({ ...t, projectId: p.id })));
-
       let tasksToProcess = [...allTasks];
       let processedCount = 0;
       const maxIterations = allTasks.length * allTasks.length; 
