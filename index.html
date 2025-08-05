@@ -57,9 +57,9 @@
     };
 
     const App = () => {
-      const timelineStartDateBotSac = new Date('2025-06-09T00:00:00'); // Alterado para 09/06
+      const timelineStartDateBotSac = new Date('2025-06-09T00:00:00');
       const daysPerPixel = 40;
-      const minWidthTimeline = 3000; 
+      const minWidthTimeline = 3000;
 
       const [projects, setProjects] = useState([
         {
@@ -83,7 +83,7 @@
           id: 'bot_cpa',
           name: 'Bot CPA',
           tasks: [
-            { id: 'hld-cpa', name: 'HLD', duration: 2, status: 'Concluída', predecessors: ['bot_sac:101'] },
+            { id: 'hld-cpa', name: 'HLD', duration: 2, status: 'Concluída', predecessors: [], startDate: new Date('2025-07-28T00:00:00') },
             { id: 'aprovacao-hld-cpa', name: '[Movida] Aprovação HLD', duration: 4, status: 'Concluída', predecessors: ['hld-cpa'] },
             { id: 'cpa-1', name: 'Escopo', duration: 2, status: 'Não Iniciado', predecessors: ['aprovacao-hld-cpa'] },
             { id: 'cpa-3', name: 'UX - SD', duration: 2, status: 'Não Iniciado', predecessors: ['cpa-1'] },
@@ -123,14 +123,32 @@
             { id: 'aprovacao-hld-e2', name: '[Movida] Aprovação HLD', duration: 4, status: 'Não Iniciado', predecessors: ['hld-e2'] },
             { id: 'e2-1', name: 'Escopo', duration: 2, status: 'Não Iniciado', predecessors: ['aprovacao-hld-e2'] },
             { id: 'e2-3', name: 'UX - SD', duration: 2, status: 'Não Iniciado', predecessors: ['e2-1'] },
-            { id: 'e2-4', name: 'Movida - Aprovação SD', duration: 2, status: 'Não Iniciado', predecessors: ['e2-3'] },
+            { id: 'e2-4', name: '[Movida] Aprovação SD', duration: 2, status: 'Não Iniciado', predecessors: ['e2-3'] },
             { id: 'e2-2', name: 'UX - Spec', duration: 2, status: 'Não Iniciado', predecessors: ['e2-4'] },
             { id: 'e2-5', name: 'BI - Marcação Documentação', duration: 2, status: 'Não Iniciado', predecessors: ['e2-2'] },
-            { id: 'e2-7', name: 'QA - Planejamento Modelagem', duration: 2, status: 'Não Iniciado', predecessors: ['e2-5'] },
-            { id: 'e2-6', name: 'DEV - Desenvolvimento de Fluxo', duration: 2, status: 'Não Iniciado', predecessors: ['e2-7'] },
-            { id: 'e2-8', name: 'QA - Execução de Testes', duration: 2, status: 'Não Iniciado', predecessors: ['e2-6'] },
-            { id: 'e2-9', name: 'PO - Certificação', duration: 1, status: 'Não Iniciado', predecessors: ['e2-8'] },
+            { id: 'e2-7', name: '[QA] Planejamento Modelagem', duration: 2, status: 'Não Iniciado', predecessors: ['e2-5'] },
+            { id: 'e2-6', name: '[DEV] Desenvolvimento de Fluxo', duration: 2, status: 'Não Iniciado', predecessors: ['e2-7'] },
+            { id: 'e2-8', name: '[QA] Execução de Testes', duration: 2, status: 'Não Iniciado', predecessors: ['e2-6'] },
+            { id: 'e2-9', name: '[PO] Certificação', duration: 1, status: 'Não Iniciado', predecessors: ['e2-8'] },
             { id: 'e2-10', name: 'GMUD', duration: 1, status: 'Não Iniciado', predecessors: ['e2-9'] },
+          ],
+        },
+        {
+          id: 'bot_rac',
+          name: 'BOT RAC',
+          tasks: [
+            { id: 'rac-hld', name: 'HLD', duration: 2, status: 'Não Iniciado', predecessors: ['ura_nova_reserva:e2-2'] },
+            { id: 'rac-aprovacao-hld', name: '[Movida] Aprovação HLD', duration: 4, status: 'Não Iniciado', predecessors: ['rac-hld'] },
+            { id: 'rac-escopo', name: 'Escopo', duration: 2, status: 'Não Iniciado', predecessors: ['rac-aprovacao-hld'] },
+            { id: 'rac-ux-sd', name: '[UX] SD', duration: 2, status: 'Não Iniciado', predecessors: ['rac-escopo'] },
+            { id: 'rac-movida-aprovacao-sd', name: '[Movida] Aprovação SD', duration: 2, status: 'Não Iniciado', predecessors: ['rac-ux-sd'] },
+            { id: 'rac-ux-spec', name: '[UX] Spec', duration: 2, status: 'Não Iniciado', predecessors: ['rac-movida-aprovacao-sd'] },
+            { id: 'rac-bi-doc', name: '[BI] Marcação Documentação', duration: 2, status: 'Não Iniciado', predecessors: ['rac-ux-spec'] },
+            { id: 'rac-qa-planejamento', name: '[QA] Planejamento Modelagem', duration: 2, status: 'Não Iniciado', predecessors: ['rac-bi-doc'] },
+            { id: 'rac-dev', name: '[DEV] Desenvolvimento de Fluxo', duration: 2, status: 'Não Iniciado', predecessors: ['rac-qa-planejamento'] },
+            { id: 'rac-qa-execucao', name: '[QA] Execução de Testes', duration: 2, status: 'Não Iniciado', predecessors: ['rac-dev'] },
+            { id: 'rac-po-certificacao', duration: 1, status: 'Não Iniciado', predecessors: ['rac-qa-execucao'] },
+            { id: 'rac-gmud', name: 'GMUD', duration: 1, status: 'Não Iniciado', predecessors: ['rac-po-certificacao'] },
           ],
         },
       ]);
@@ -221,23 +239,28 @@
       };
 
       const getTimelineDates = () => {
+        const timelineEndDateHardLimit = new Date('2025-11-30T23:59:59'); // Fixed end date for X-axis
         const dates = [];
-        const botSacLastTask = projects.find(p => p.id === 'bot_sac').tasks.find(t => t.id === '107');
-        const uraLastTask = projects.find(p => p.id === 'ura_reservas').tasks.find(t => t.id === '192');
-        const botCpaLastTask = projects.find(p => p.id === 'bot_cpa').tasks.find(t => t.id === 'cpa-10');
-        const unrLastTask = projects.find(p => p.id === 'ura_nova_reserva').tasks.find(t => t.id === 'e2-10');
         
-        const botSacEndDate = taskPositions[botSacLastTask.id] ? addBusinessDays(taskPositions[botSacLastTask.id].startDate, taskPositions[botSacLastTask.id].duration) : timelineStartDateBotSac;
-        const uraEndDate = taskPositions[uraLastTask.id] ? addBusinessDays(taskPositions[uraLastTask.id].startDate, taskPositions[uraLastTask.id].duration) : timelineStartDateBotSac;
-        const botCpaEndDate = taskPositions[botCpaLastTask.id] ? addBusinessDays(taskPositions[botCpaLastTask.id].startDate, taskPositions[botCpaLastTask.id].duration) : timelineStartDateBotSac;
-        const unrEndDate = taskPositions[unrLastTask.id] ? addBusinessDays(taskPositions[unrLastTask.id].startDate, taskPositions[unrLastTask.id].duration) : timelineStartDateBotSac;
-        
-        const endDate = new Date(Math.max(botSacEndDate.getTime(), uraEndDate.getTime(), botCpaEndDate.getTime(), unrEndDate.getTime()));
+        let maxProjectEndDate = timelineStartDateBotSac; 
+        projects.forEach(project => {
+            project.tasks.forEach(task => {
+                const pos = taskPositions[task.id];
+                if (pos && pos.startDate) {
+                    const taskActualEndDate = addBusinessDays(pos.startDate, pos.duration);
+                    if (taskActualEndDate.getTime() > maxProjectEndDate.getTime()) {
+                        maxProjectEndDate = taskActualEndDate;
+                    }
+                }
+            });
+        });
+
+        const displayEndDate = new Date(Math.min(timelineEndDateHardLimit.getTime(), maxProjectEndDate.getTime()));
         
         let currentDate = new Date(timelineStartDateBotSac);
         
         const markers = [];
-        while(currentDate < endDate) {
+        while(currentDate <= displayEndDate) {
           if (currentDate.getDay() === 1) {
             markers.push(new Date(currentDate));
           }
@@ -249,7 +272,7 @@
 
       return (
         <div className="bg-gray-50 flex items-center justify-center p-8 min-h-screen">
-          <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-5xl">
+          <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-full">
             <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">Plano de Ação de Retenção</h1>
             
             <div className="flex justify-end space-x-4 mb-4">
