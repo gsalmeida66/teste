@@ -1,9 +1,11 @@
-<!DOCTYPE html>
+versão comparativa
+
+<!DOCTYPE HTML>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Plano de Ação de Retenção</title>
+  <title>Comparativo de Planos de Retenção</title>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -22,13 +24,13 @@
   <script type="text/babel">
     const { useState, useEffect } = React;
 
-    // Helper function to calculate the number of business days between two dates
+    // Função auxiliar para calcular o número de dias úteis entre duas datas
     const getBusinessDays = (startDate, endDate) => {
       let count = 0;
       const currentDate = new Date(startDate);
       while (currentDate <= endDate) {
         const dayOfWeek = currentDate.getDay();
-        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+        if (dayOfWeek !== 0 && dayOfWeek !== 6) { // 0 = Domingo, 6 = Sábado
           count++;
         }
         currentDate.setDate(currentDate.getDate() + 1);
@@ -36,7 +38,7 @@
       return count;
     };
 
-    // Helper function to add business days to a date
+    // Função auxiliar para adicionar dias úteis a uma data
     const addBusinessDays = (date, days) => {
       const result = new Date(date);
       let addedDays = 0;
@@ -49,6 +51,7 @@
       return result;
     };
 
+    // Função auxiliar para formatar a data
     const formatDate = (date) => {
       if (!date) return '';
       const d = new Date(date);
@@ -56,12 +59,277 @@
       return d.toLocaleDateString('pt-BR', options);
     };
 
-    const App = () => {
-      const timelineStartDateBotSac = new Date('2025-06-09T00:00:00');
-      const daysPerPixel = 40;
-      const minWidthTimeline = 3000;
+    // Componente Timeline para exibir um cronograma
+    const Timeline = ({ projects, title }) => {
+      const timelineStartDateBotSac = new Date('2025-06-09T00:00:00'); // Data de início da linha do tempo
+      const daysPerPixel = 40; // Quantidade de pixels por dia útil
+      const minWidthTimeline = 3000; // Largura mínima da linha do tempo para garantir espaço
 
-      const [projects, setProjects] = useState([
+      const [taskPositions, setTaskPositions] = useState({}); // Estado para armazenar as posições das tarefas
+
+      // Efeito para calcular as posições das tarefas sempre que os projetos mudarem
+      useEffect(() => {
+        const allTasks = projects.flatMap(p => p.tasks.map(t => ({ ...t, projectId: p.id })));
+        const positions = {};
+
+        let tasksToProcess = [...allTasks];
+        let processedCount = 0;
+        const maxIterations = allTasks.length * allTasks.length; 
+
+        for (let i = 0; i < maxIterations && processedCount < allTasks.length; i++) {
+          const initialTasksToProcessCount = tasksToProcess.length;
+          tasksToProcess = tasksToProcess.filter(task => {
+            let startDate;
+            let canProcess = true;
+
+            if (task.startDate) {
+                startDate = task.startDate;
+            } else if (task.predecessors && task.predecessors.length > 0) {
+              const predecessorEndDates = task.predecessors.map(predId => {
+                const predIdParts = predId.split(':');
+                const predecessorProjectId = predIdParts.length > 1 ? predIdParts[0] : task.projectId;
+                const predecessorTaskId = predIdParts.length > 1 ? predIdParts[1] : predIdParts[0];
+                const predPos = positions[predecessorTaskId]; 
+                
+                if (!predPos) {
+                    canProcess = false; 
+                    return timelineStartDateBotSac; 
+                }
+                return addBusinessDays(predPos.startDate, predPos.duration - 1);
+              });
+
+              if (!canProcess) return true; 
+
+              startDate = addBusinessDays(new Date(Math.max(...predecessorEndDates)), 1);
+            } else {
+              startDate = timelineStartDateBotSac;
+            }
+            
+            if (canProcess) {
+              const businessDaysFromStart = getBusinessDays(timelineStartDateBotSac, startDate);
+              const left = (businessDaysFromStart - 1) * daysPerPixel;
+              const width = task.duration * daysPerPixel;
+              
+              positions[task.id] = { startDate, duration: task.duration, left, width };
+              processedCount++;
+              return false; 
+            }
+            return true; 
+          });
+
+          if (tasksToProcess.length === initialTasksToProcessCount && tasksToProcess.length > 0) {
+            console.warn("Não foi possível processar todas as tarefas. Possíveis dependências circulares ou predecessores ausentes.");
+            break;
+          }
+        }
+        
+        setTaskPositions(positions);
+      }, [projects]); 
+
+      // Retorna a cor da barra da tarefa com base no status
+      const getTaskColor = (status) => {
+        switch (status) {
+          case 'Concluída':
+            return 'bg-green-500';
+          case 'Em Andamento':
+            return 'bg-blue-500';
+          default:
+            return 'bg-gray-400';
+        }
+      };
+
+      // Retorna as datas para a exibição no eixo X da linha do tempo
+      const getTimelineDates = () => {
+        const timelineEndDateHardLimit = new Date('2025-11-30T23:59:59'); 
+        
+        let maxProjectEndDate = timelineStartDateBotSac; 
+        projects.forEach(project => {
+            project.tasks.forEach(task => {
+                const pos = taskPositions[task.id];
+                if (pos && pos.startDate) {
+                    const taskActualEndDate = addBusinessDays(pos.startDate, pos.duration);
+                    if (taskActualEndDate.getTime() > maxProjectEndDate.getTime()) {
+                        maxProjectEndDate = taskActualEndDate;
+                    }
+                }
+            });
+        });
+
+        const displayEndDate = new Date(Math.min(timelineEndDateHardLimit.getTime(), maxProjectEndDate.getTime()));
+        
+        let currentDate = new Date(timelineStartDateBotSac);
+        
+        const markers = [];
+        while(currentDate <= displayEndDate) {
+          if (currentDate.getDay() === 1) { 
+            markers.push(new Date(currentDate));
+          }
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+        
+        return markers;
+      };
+
+      return (
+        <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-full">
+          <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">{title}</h2>
+          {/* Legenda de status */}
+          <div className="flex justify-end space-x-4 mb-4">
+            <div className="flex items-center">
+              <div className="w-4 h-4 rounded-full bg-green-500 mr-2"></div>
+              <span className="text-sm text-gray-600">Concluída</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-4 h-4 rounded-full bg-blue-500 mr-2"></div>
+              <span className="text-sm text-gray-600">Em Andamento</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-4 h-4 rounded-full bg-gray-400 mr-2"></div>
+              <span className="text-sm text-gray-600">Não Iniciado</span>
+            </div>
+          </div>
+          {/* Container principal para nomes de projetos fixos e cronograma rolável */}
+          <div className="flex">
+            {/* Coluna para nomes dos projetos (fixa) */}
+            <div className="flex-shrink-0 w-32 bg-white z-30"> 
+              {/* Espaço para alinhar com o eixo X do cronograma */}
+              <div className="h-16"></div> 
+              <div className="space-y-6"> {/* Adicionado space-y-6 aqui para espaçamento vertical */}
+                {projects.map(project => (
+                  <div key={project.id} className="h-16 flex items-center text-sm font-semibold text-gray-700 py-2">
+                    {project.name}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Coluna para o conteúdo do cronograma (rolável) */}
+            <div className="flex-grow relative overflow-x-auto pb-6">
+              {/* Container para datas e linha do eixo */}
+              <div className="relative h-16 mb-4" style={{ minWidth: `${minWidthTimeline}px` }}> 
+                {/* Datas posicionadas no topo */}
+                <div className="absolute top-0 w-full flex justify-between text-xs text-gray-500 z-10">
+                  {getTimelineDates().map((date, index) => (
+                    <div key={index} className="text-center absolute" style={{ left: `${(getBusinessDays(timelineStartDateBotSac, date) - 1) * daysPerPixel}px` }}>
+                      {formatDate(date)}
+                    </div>
+                  ))}
+                </div>
+                {/* A linha horizontal principal do eixo, posicionada na parte inferior */}
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200 z-0"></div>
+              </div>
+              {/* Linhas de projeto e tarefas */}
+              <div className="space-y-6"> {/* Adicionado space-y-6 aqui para espaçamento vertical */}
+                {projects.map(project => (
+                  <div key={project.id} className="flex items-center"> {/* Removido mb-6 daqui */}
+                    <div className="flex-grow relative h-16" style={{ minWidth: `${minWidthTimeline}px` }}>
+                      {project.tasks.map(task => {
+                        const { left, width, startDate } = taskPositions[task.id] || {};
+                        if (!left) return null; 
+                        return (
+                          <div
+                            key={task.id}
+                            className={`absolute top-1/2 -translate-y-1/2 ${getTaskColor(task.status)} h-14 rounded-md flex items-center text-sm text-white font-semibold shadow cursor-pointer transition-all duration-300 hover:scale-105`}
+                            style={{ left: `${left}px`, width: `${width}px` }}
+                            title={`${task.name} (${formatDate(startDate)} a ${formatDate(addBusinessDays(startDate, task.duration))})`}
+                          >
+                            <span className="pl-2">{task.name}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // Componente para o card de análise comparativa
+    const AnalysisCard = () => {
+      return (
+        <div className="bg-white p-6 rounded-2xl shadow-xl w-full sticky top-8 h-fit">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Análise Comparativa</h2>
+          <p className="text-gray-600 mb-4">
+            Insira aqui sua análise comparativa entre o cronograma atual e o ideal.
+          </p>
+          <div className="bg-gray-100 p-4 rounded-md h-96 overflow-y-auto">
+            <p className="text-gray-500 italic">
+              Este é o espaço para sua análise. Você pode adicionar pontos, gráficos ou textos para comparar os dois cronogramas.
+            </p>
+          </div>
+        </div>
+      );
+    };
+
+    // Helper function to calculate task positions for a given project array
+    const calculateTaskPositionsForApp = (projectsToCalculate) => {
+      const positions = {};
+      const timelineStartDateBotSac = new Date('2025-06-09T00:00:00'); 
+      const daysPerPixel = 40;
+
+      const allTasks = projectsToCalculate.flatMap(p => p.tasks.map(t => ({ ...t, projectId: p.id })));
+
+      let tasksToProcess = [...allTasks];
+      let processedCount = 0;
+      const maxIterations = allTasks.length * allTasks.length; 
+
+      for (let i = 0; i < maxIterations && processedCount < allTasks.length; i++) {
+        const initialTasksToProcessCount = tasksToProcess.length;
+        tasksToProcess = tasksToProcess.filter(task => {
+          let startDate;
+          let canProcess = true;
+
+          if (task.startDate) {
+              startDate = task.startDate;
+          } else if (task.predecessors && task.predecessors.length > 0) {
+            const predecessorEndDates = task.predecessors.map(predId => {
+              const predIdParts = predId.split(':');
+              const predecessorProjectId = predIdParts.length > 1 ? predIdParts[0] : task.projectId;
+              const predecessorTaskId = predIdParts.length > 1 ? predIdParts[1] : predIdParts[0];
+              const predPos = positions[predecessorTaskId]; 
+              
+              if (!predPos) {
+                  canProcess = false; 
+                  return timelineStartDateBotSac; 
+              }
+              return addBusinessDays(predPos.startDate, predPos.duration - 1);
+            });
+
+            if (!canProcess) return true; 
+
+            startDate = addBusinessDays(new Date(Math.max(...predecessorEndDates)), 1);
+          } else {
+            startDate = timelineStartDateBotSac;
+          }
+          
+          if (canProcess) {
+            const businessDaysFromStart = getBusinessDays(timelineStartDateBotSac, startDate);
+            const left = (businessDaysFromStart - 1) * daysPerPixel;
+            const width = task.duration * daysPerPixel;
+            
+            positions[task.id] = { startDate, duration: task.duration, left, width };
+            processedCount++;
+            return false; 
+          }
+          return true; 
+        });
+
+        if (tasksToProcess.length === initialTasksToProcessCount && tasksToProcess.length > 0) {
+          console.warn("Não foi possível processar todas as tarefas no cálculo de posição. Possíveis dependências circulares ou predecessores ausentes.");
+          break;
+        }
+      }
+      return positions;
+    };
+
+
+    // Componente principal da aplicação
+    const App = () => {
+      // Dados iniciais para o cronograma atual
+      const initialProjects = [
         {
           id: 'bot_sac',
           name: 'BOT SAC (Menu ACOA)',
@@ -151,249 +419,86 @@
             { id: 'rac-gmud', name: 'GMUD', duration: 1, status: 'Não Iniciado', predecessors: ['rac-po-certificacao'] },
           ],
         },
-      ]);
+      ];
 
-      const [editingTask, setEditingTask] = useState(null);
-      const [formState, setFormState] = useState({ name: '', duration: 0, status: 'Não Iniciado' });
-      const [editingProjectId, setEditingProjectId] = useState(null);
-      const [taskPositions, setTaskPositions] = useState({});
+      // Defina um segundo conjunto de projetos para o cronograma ideal.
+      const idealProjects = JSON.parse(JSON.stringify(initialProjects));
 
-      useEffect(() => {
-        const allTasks = projects.flatMap(p => p.tasks.map(t => ({ ...t, projectId: p.id })));
-        const positions = {};
-
-        allTasks.forEach(task => {
-          let startDate;
-          
-          if (task.startDate) {
-              startDate = task.startDate;
-          } else if (task.predecessors && task.predecessors.length > 0) {
-            const predecessorEndDates = task.predecessors.map(predId => {
-              const predIdParts = predId.split(':');
-              const predecessorProjectId = predIdParts.length > 1 ? predIdParts[0] : task.projectId;
-              const predecessorTaskId = predIdParts.length > 1 ? predIdParts[1] : predIdParts[0];
-              const predPos = projects.find(p => p.id === predecessorProjectId).tasks.find(t => t.id === predecessorTaskId);
-              
-              if (!predPos) return timelineStartDateBotSac;
-              const predStartDate = positions[predPos.id] ? positions[predPos.id].startDate : timelineStartDateBotSac;
-              const predDuration = predPos.duration;
-              return addBusinessDays(predStartDate, predDuration - 1);
-            });
-            startDate = addBusinessDays(new Date(Math.max(...predecessorEndDates)), 1);
-          } else {
-            startDate = timelineStartDateBotSac;
-          }
-          
-          const referenceDate = timelineStartDateBotSac;
-          const businessDaysFromStart = getBusinessDays(referenceDate, startDate);
-          const left = (businessDaysFromStart - 1) * daysPerPixel;
-          const width = task.duration * daysPerPixel;
-          
-          positions[task.id] = { startDate, duration: task.duration, left, width };
-        });
-        
-        setTaskPositions(positions);
-      }, [projects]);
-
-      const getTaskColor = (status) => {
-        switch (status) {
-          case 'Concluída':
-            return 'bg-green-500';
-          case 'Em Andamento':
-            return 'bg-blue-500';
-          default:
-            return 'bg-gray-400';
+      // 1. Ajusta a data inicial da etapa "HLD" do projeto "BOT CPA" no cronograma ideal
+      const botCpaIdeal = idealProjects.find(p => p.id === 'bot_cpa');
+      if (botCpaIdeal) {
+        const hldTask = botCpaIdeal.tasks.find(t => t.id === 'hld-cpa');
+        if (hldTask) {
+          hldTask.startDate = new Date('2025-07-28T00:00:00');
         }
-      };
+      }
 
-      const handleEditTask = (projectId, taskId) => {
-        const project = projects.find(p => p.id === projectId);
-        const task = project.tasks.find(t => t.id === taskId);
-        setEditingTask(task);
-        setEditingProjectId(projectId);
-        setFormState({
-          name: task.name,
-          duration: task.duration,
-          status: task.status,
-        });
-      };
+      // Calcula as posições das tarefas para o idealProjects após a primeira alteração
+      let currentIdealTaskPositions = calculateTaskPositionsForApp(idealProjects);
 
-      const handleSaveEdit = (e) => {
-        e.preventDefault();
-        setProjects(prevProjects =>
-          prevProjects.map(project =>
-            project.id === editingProjectId
-              ? {
-                  ...project,
-                  tasks: project.tasks.map(task =>
-                    task.id === editingTask.id
-                      ? { ...task, ...formState, duration: Number(formState.duration) }
-                      : task
-                  ),
-                }
-              : project
-          )
-        );
-        setEditingTask(null);
-        setEditingProjectId(null);
-      };
-
-      const getTimelineDates = () => {
-        const timelineEndDateHardLimit = new Date('2025-11-30T23:59:59'); // Fixed end date for X-axis
-        const dates = [];
-        
-        let maxProjectEndDate = timelineStartDateBotSac; 
-        projects.forEach(project => {
-            project.tasks.forEach(task => {
-                const pos = taskPositions[task.id];
-                if (pos && pos.startDate) {
-                    const taskActualEndDate = addBusinessDays(pos.startDate, pos.duration);
-                    if (taskActualEndDate.getTime() > maxProjectEndDate.getTime()) {
-                        maxProjectEndDate = taskActualEndDate;
-                    }
-                }
-            });
-        });
-
-        const displayEndDate = new Date(Math.min(timelineEndDateHardLimit.getTime(), maxProjectEndDate.getTime()));
-        
-        let currentDate = new Date(timelineStartDateBotSac);
-        
-        const markers = [];
-        while(currentDate <= displayEndDate) {
-          if (currentDate.getDay() === 1) {
-            markers.push(new Date(currentDate));
+      // 2. Ajusta a data inicial do projeto "URA Reservas"
+      const uraReservasIdeal = idealProjects.find(p => p.id === 'ura_reservas');
+      if (uraReservasIdeal) {
+        const aprovacaoHldCpaEnd = currentIdealTaskPositions['aprovacao-hld-cpa'] ? 
+                                    addBusinessDays(currentIdealTaskPositions['aprovacao-hld-cpa'].startDate, currentIdealTaskPositions['aprovacao-hld-cpa'].duration - 1) : null;
+        if (aprovacaoHldCpaEnd) {
+          const hldUraTask = uraReservasIdeal.tasks.find(t => t.id === 'hld-ura');
+          if (hldUraTask) {
+            hldUraTask.startDate = addBusinessDays(aprovacaoHldCpaEnd, 1);
           }
-          currentDate.setDate(currentDate.getDate() + 1);
         }
-        
-        return markers;
-      };
+      }
+
+      // Recalcula as posições após o ajuste de "URA Reservas"
+      currentIdealTaskPositions = calculateTaskPositionsForApp(idealProjects);
+
+      // 3. Ajusta a data inicial do projeto "URA Reservas (Automação Nova Reserva)"
+      const uraNovaReservaIdeal = idealProjects.find(p => p.id === 'ura_nova_reserva');
+      if (uraNovaReservaIdeal) {
+        const aprovacaoHldUraEnd = currentIdealTaskPositions['aprovacao-hld-ura'] ? 
+                                   addBusinessDays(currentIdealTaskPositions['aprovacao-hld-ura'].startDate, currentIdealTaskPositions['aprovacao-hld-ura'].duration - 1) : null;
+        if (aprovacaoHldUraEnd) {
+          const hldE2Task = uraNovaReservaIdeal.tasks.find(t => t.id === 'hld-e2');
+          if (hldE2Task) {
+            hldE2Task.startDate = addBusinessDays(aprovacaoHldUraEnd, 1);
+          }
+        }
+      }
+
+      // Recalcula as posições após o ajuste de "URA Reservas (Automação Nova Reserva)"
+      currentIdealTaskPositions = calculateTaskPositionsForApp(idealProjects);
+
+      // 4. Ajusta a data inicial do projeto "BOT RAC"
+      const botRacIdeal = idealProjects.find(p => p.id === 'bot_rac');
+      if (botRacIdeal) {
+        const aprovacaoHldE2End = currentIdealTaskPositions['aprovacao-hld-e2'] ? 
+                                  addBusinessDays(currentIdealTaskPositions['aprovacao-hld-e2'].startDate, currentIdealTaskPositions['aprovacao-hld-e2'].duration - 1) : null;
+        if (aprovacaoHldE2End) {
+          const racHldTask = botRacIdeal.tasks.find(t => t.id === 'rac-hld');
+          if (racHldTask) {
+            racHldTask.startDate = addBusinessDays(aprovacaoHldE2End, 1);
+          }
+        }
+      }
 
       return (
-        <div className="bg-gray-50 flex items-center justify-center p-8 min-h-screen">
-          <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-full">
-            <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">Plano de Ação de Retenção</h1>
-            
-            <div className="flex justify-end space-x-4 mb-4">
-              <div className="flex items-center">
-                <div className="w-4 h-4 rounded-full bg-green-500 mr-2"></div>
-                <span className="text-sm text-gray-600">Concluída</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 rounded-full bg-blue-500 mr-2"></div>
-                <span className="text-sm text-gray-600">Em Andamento</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 rounded-full bg-gray-400 mr-2"></div>
-                <span className="text-sm text-gray-600">Não Iniciado</span>
-              </div>
-            </div>
-
-            <div className="relative w-full overflow-x-auto pb-6">
-              <div className="flex items-center text-xs text-gray-500 mb-4 ml-[64px] relative">
-                <div className="relative" style={{ width: '100%', minWidth: `${minWidthTimeline}px` }}>
-                  <div className="absolute inset-y-0 left-0 right-0 h-1 bg-gray-200 z-0 top-1/2 -translate-y-1/2"></div>
-                  <div className="flex justify-between relative z-10">
-                    {getTimelineDates().map((date, index) => (
-                      <div key={index} className="text-center absolute" style={{ left: `${(getBusinessDays(timelineStartDateBotSac, date) - 1) * daysPerPixel}px` }}>
-                        <div className="relative">
-                          {formatDate(date)}
-                          <div className="absolute bottom-[-1.5rem] left-1/2 -translate-x-1/2 h-10 w-px bg-gray-300"></div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {projects.map(project => (
-                <div key={project.id} className="flex items-center mb-6">
-                  <div className="w-16 flex-shrink-0 text-sm font-semibold text-gray-700">{project.name}</div>
-                  <div className="flex-grow relative h-16" style={{ minWidth: `${minWidthTimeline}px` }}>
-                    {project.tasks.map(task => {
-                      const { left, width, startDate } = taskPositions[task.id] || {};
-                      if (!left) return null;
-                      return (
-                        <div
-                          key={task.id}
-                          className={`absolute top-1/2 -translate-y-1/2 ${getTaskColor(task.status)} h-14 rounded-md flex items-center text-sm text-white font-semibold shadow cursor-pointer transition-all duration-300 hover:scale-105`}
-                          style={{ left: `${left}px`, width: `${width}px` }}
-                          onClick={() => handleEditTask(project.id, task.id)}
-                          title={`${task.name} (${formatDate(startDate)} a ${formatDate(addBusinessDays(startDate, task.duration))})`}
-                        >
-                          <span className="pl-2">{task.name}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {editingTask && (
-              <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4">
-                <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
-                  <h2 className="text-lg font-bold mb-4">Editar Tarefa: {editingTask.name}</h2>
-                  <form onSubmit={handleSaveEdit}>
-                    <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700">Nome da Tarefa</label>
-                      <input
-                        type="text"
-                        value={formState.name}
-                        onChange={(e) => setFormState({ ...formState, name: e.target.value })}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                      />
-                    </div>
-                    <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700">Duração (dias úteis)</label>
-                      <input
-                        type="number"
-                        value={formState.duration}
-                        onChange={(e) => setFormState({ ...formState, duration: e.target.value })}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                        min="1"
-                      />
-                    </div>
-                    <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700">Status</label>
-                      <select
-                        value={formState.status}
-                        onChange={(e) => setFormState({ ...formState, status: e.target.value })}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                      >
-                        <option>Concluída</option>
-                        <option>Em Andamento</option>
-                        <option>Não Iniciado</option>
-                      </select>
-                    </div>
-                    <div className="flex justify-end space-x-2">
-                      <button
-                        type="button"
-                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
-                        onClick={() => setEditingTask(null)}
-                      >
-                        Cancelar
-                      </button>
-                      <button
-                        type="submit"
-                        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                      >
-                        Salvar
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            )}
+        <div className="bg-gray-50 flex flex-col lg:flex-row p-8 min-h-screen">
+          {/* Coluna esquerda para os dois cronogramas */}
+          <div className="w-full lg:w-9/12 space-y-8 lg:pr-8">
+            <Timeline projects={initialProjects} title="Cronograma - Plano de Retenção - Atual" />
+            <Timeline projects={idealProjects} title="Cronograma - Plano de Retenção - Ideal" />
+          </div>
+          {/* Coluna direita para o card de análise */}
+          <div className="w-full lg:w-3/12 mb-8 lg:mb-0">
+            <AnalysisCard />
           </div>
         </div>
       );
     };
 
+    // Renderiza o componente principal no elemento 'root' do HTML
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(React.createElement(App));
   </script>
 </body>
 </html>
-
